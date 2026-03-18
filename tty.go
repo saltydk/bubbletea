@@ -31,8 +31,11 @@ func (p *Program) initTerminal() error {
 // restoreTerminalState restores the terminal to the state prior to running the
 // Bubble Tea program.
 func (p *Program) restoreTerminalState() error {
-	// Flush queued commands.
-	_ = p.flush()
+	// Drain any pending terminal responses (DECRPM, kitty keyboard query)
+	// from the input buffer. These are responses to capability queries sent
+	// during rendering that the cancelled input reader never consumed.
+	// Without this, they appear as garbage characters in the user's shell.
+	p.drainInput()
 
 	return p.restoreInput()
 }
